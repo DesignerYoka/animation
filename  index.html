@@ -1,0 +1,179 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2575.5">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
+  </style>
+</head>
+<body>
+<p class="p1">&lt;!DOCTYPE html&gt;</p>
+<p class="p1">&lt;html lang="en"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;head&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;meta charset="UTF-8" /&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;title&gt;Shader Animation&lt;/title&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;script type="importmap"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{</p>
+<p class="p1"><span class="Apple-converted-space">        </span>"imports": {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>"react": "https://esm.sh/react@18.0.2",</p>
+<p class="p1"><span class="Apple-converted-space">          </span>"react-dom": "https://esm.sh/react-dom@18.0.2",</p>
+<p class="p1"><span class="Apple-converted-space">          </span>"three": "https://esm.sh/three@0.148.0",</p>
+<p class="p1"><span class="Apple-converted-space">          </span>"react-three/fiber": "https://esm.sh/@react-three/fiber@7.0.24"</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/script&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;style&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>html, body {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>margin: 0;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>padding: 0;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>width: 100%;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>height: 100%;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>border: 0;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p1"><span class="Apple-converted-space">      </span>.nt-embed, .nt-embed canvas {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>width: 100%;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>height: 100%;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/style&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/head&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;body&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;script type="module"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>import React, { useRef } from 'react';</p>
+<p class="p1"><span class="Apple-converted-space">      </span>import ReactDOM from 'react-dom';</p>
+<p class="p1"><span class="Apple-converted-space">      </span>import * as THREE from 'three';</p>
+<p class="p1"><span class="Apple-converted-space">      </span>import { Canvas, useFrame } from 'react-three/fiber';</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>let embedRoot = document.createElement('div');</p>
+<p class="p1"><span class="Apple-converted-space">      </span>embedRoot.className = "nt-embed";</p>
+<p class="p1"><span class="Apple-converted-space">      </span>document.body.appendChild(embedRoot);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>const TextureMesh = () =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const mesh = useRef(null);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>useFrame(state =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>const { clock, mouse, gl } = state;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>if (mesh.current) {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>mesh.current.material.uniforms.u_mouse.value = [mouse.x / 2 + 0.5, mouse.y / 2 + 0.5];</p>
+<p class="p1"><span class="Apple-converted-space">            </span>mesh.current.material.uniforms.u_time.value = clock.getElapsedTime();</p>
+<p class="p1"><span class="Apple-converted-space">            </span>let c = gl.domElement.getBoundingClientRect();</p>
+<p class="p1"><span class="Apple-converted-space">            </span>mesh.current.material.uniforms.u_resolution.value = [c.width, c.height];</p>
+<p class="p1"><span class="Apple-converted-space">          </span>}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>});</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>return React.createElement('mesh',</p>
+<p class="p1"><span class="Apple-converted-space">          </span>{ ref: mesh, position: [0, 0, 0], scale: 1 },</p>
+<p class="p1"><span class="Apple-converted-space">          </span>React.createElement('planeGeometry', { args: [100, 100] }),</p>
+<p class="p1"><span class="Apple-converted-space">          </span>React.createElement('shaderMaterial', {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>fragmentShader: `// Fragment shader</p>
+<p class="p2"><br></p>
+<p class="p1">uniform vec2 u_resolution;</p>
+<p class="p1">uniform vec2 u_mouse;</p>
+<p class="p1">uniform float u_time;</p>
+<p class="p1">uniform vec3 u_colors[4];</p>
+<p class="p1">uniform vec4 u_background;</p>
+<p class="p1">uniform float u_scale;</p>
+<p class="p1">uniform int u_waves;</p>
+<p class="p1">uniform float u_thickness;</p>
+<p class="p1">uniform float u_stretch_x;</p>
+<p class="p1">uniform float u_stretch_y;</p>
+<p class="p1">uniform float u_blur;</p>
+<p class="p1">uniform float u_speed;</p>
+<p class="p1">uniform float u_coil;</p>
+<p class="p2"><br></p>
+<p class="p1">vec4 wave(vec2 uv, float speed, float height, vec3 col) {</p>
+<p class="p1"><span class="Apple-converted-space">  </span>float taper = abs(uv.x);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>uv.y += smoothstep(1., 0., taper) * sin(u_time * speed + uv.x * height) * .2;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>return vec4(</p>
+<p class="p1"><span class="Apple-converted-space">    </span>smoothstep(u_blur * smoothstep(.1, .9, taper), 0., abs(uv.y)*(1.-u_blur) - .2*u_thickness) * col,</p>
+<p class="p1"><span class="Apple-converted-space">    </span>1.0</p>
+<p class="p1"><span class="Apple-converted-space">  </span>) * smoothstep(1., .5, abs(uv.x));</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">vec4 render(vec2 uv) {</p>
+<p class="p1"><span class="Apple-converted-space">  </span>vec4 color = vec4(0.);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>uv *= (1. - u_scale);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>for (int i = 1; i &lt;= 8; i++) {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>vec3 c = u_colors[i % 4];</p>
+<p class="p1"><span class="Apple-converted-space">    </span>float t = float(i) / float(u_waves);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>vec4 l = wave(</p>
+<p class="p1"><span class="Apple-converted-space">      </span>uv * vec2(1.5 - 1.5 * u_stretch_x, 4. - 4. * u_stretch_y),</p>
+<p class="p1"><span class="Apple-converted-space">      </span>1. + t * u_speed * 8.0,</p>
+<p class="p1"><span class="Apple-converted-space">      </span>u_coil * t,</p>
+<p class="p1"><span class="Apple-converted-space">      </span>c * vec3(.2 + t * .7, .2 + t * .4, 1.0 * t)</p>
+<p class="p1"><span class="Apple-converted-space">    </span>);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>color += vec4(l.rgb, clamp(l.r + l.g + l.b, 0., 1.));</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>return color;</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">void main() {</p>
+<p class="p1"><span class="Apple-converted-space">  </span>vec2 uv = (gl_FragCoord.xy - .5 * u_resolution.xy) / u_resolution.y;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>vec4 color = render(uv);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>color = (color * color.a) + (u_background * (1. - color.a));</p>
+<p class="p1"><span class="Apple-converted-space">  </span>gl_FragColor = color;</p>
+<p class="p1">}`,</p>
+<p class="p1"><span class="Apple-converted-space">            </span>vertexShader: `</p>
+<p class="p1">void main() {</p>
+<p class="p1"><span class="Apple-converted-space">  </span>gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);</p>
+<p class="p1">}`,</p>
+<p class="p1"><span class="Apple-converted-space">            </span>uniforms: {</p>
+<p class="p1"><span class="Apple-converted-space">              </span>u_colors: { value: [</p>
+<p class="p1"><span class="Apple-converted-space">                </span>new THREE.Vector3(0.937, 0, 1),</p>
+<p class="p1"><span class="Apple-converted-space">                </span>new THREE.Vector3(0.875, 1, 0),</p>
+<p class="p1"><span class="Apple-converted-space">                </span>new THREE.Vector3(0, 1, 1),</p>
+<p class="p1"><span class="Apple-converted-space">                </span>new THREE.Vector3(0.467, 0.22, 1)</p>
+<p class="p1"><span class="Apple-converted-space">              </span>]},</p>
+<p class="p1"><span class="Apple-converted-space">              </span>u_background: { value: new THREE.Vector4(0.0078, 0.0039, 0.0588, 1) },</p>
+<p class="p1"><span class="Apple-converted-space">              </span>u_scale: { value: 0 },</p>
+<p class="p1"><span class="Apple-converted-space">              </span>u_waves: { value: 8 },</p>
+<p class="p1"><span class="Apple-converted-space">              </span>u_thickness: { value: 0.04 },</p>
+<p class="p1"><span class="Apple-converted-space">              </span>u_stretch_x: { value: 0 },</p>
+<p class="p1"><span class="Apple-converted-space">              </span>u_stretch_y: { value: 0.677 },</p>
+<p class="p1"><span class="Apple-converted-space">              </span>u_blur: { value: 0.04 },</p>
+<p class="p1"><span class="Apple-converted-space">              </span>u_speed: { value: 0.196 },</p>
+<p class="p1"><span class="Apple-converted-space">              </span>u_coil: { value: 6.084 },</p>
+<p class="p1"><span class="Apple-converted-space">              </span>u_time: { value: 0 },</p>
+<p class="p1"><span class="Apple-converted-space">              </span>u_mouse: { value: [0, 0] },</p>
+<p class="p1"><span class="Apple-converted-space">              </span>u_resolution: { value: [100, 100] }</p>
+<p class="p1"><span class="Apple-converted-space">            </span>},</p>
+<p class="p1"><span class="Apple-converted-space">            </span>glslVersion: "100"</p>
+<p class="p1"><span class="Apple-converted-space">          </span>})</p>
+<p class="p1"><span class="Apple-converted-space">        </span>);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>ReactDOM.render(</p>
+<p class="p1"><span class="Apple-converted-space">        </span>React.createElement(Canvas, {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>gl: {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>preserveDrawingBuffer: true,</p>
+<p class="p1"><span class="Apple-converted-space">            </span>premultipliedAlpha: false,</p>
+<p class="p1"><span class="Apple-converted-space">            </span>alpha: true,</p>
+<p class="p1"><span class="Apple-converted-space">            </span>transparent: true,</p>
+<p class="p1"><span class="Apple-converted-space">            </span>antialias: true,</p>
+<p class="p1"><span class="Apple-converted-space">            </span>precision: "highp",</p>
+<p class="p1"><span class="Apple-converted-space">            </span>powerPreference: "high-performance"</p>
+<p class="p1"><span class="Apple-converted-space">          </span>},</p>
+<p class="p1"><span class="Apple-converted-space">          </span>resize: {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>debounce: 0,</p>
+<p class="p1"><span class="Apple-converted-space">            </span>scroll: false,</p>
+<p class="p1"><span class="Apple-converted-space">            </span>offsetSize: true</p>
+<p class="p1"><span class="Apple-converted-space">          </span>},</p>
+<p class="p1"><span class="Apple-converted-space">          </span>dpr: 1,</p>
+<p class="p1"><span class="Apple-converted-space">          </span>camera: {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>fov: 75,</p>
+<p class="p1"><span class="Apple-converted-space">            </span>near: 0.1,</p>
+<p class="p1"><span class="Apple-converted-space">            </span>far: 1000,</p>
+<p class="p1"><span class="Apple-converted-space">            </span>position: [0, 0, 5]</p>
+<p class="p1"><span class="Apple-converted-space">          </span>},</p>
+<p class="p1"><span class="Apple-converted-space">          </span>style: { height: "100%", width: "100%" }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}, React.createElement(TextureMesh)),</p>
+<p class="p1"><span class="Apple-converted-space">        </span>embedRoot</p>
+<p class="p1"><span class="Apple-converted-space">      </span>);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/script&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/body&gt;</p>
+<p class="p1">&lt;/html&gt;</p>
+</body>
+</html>
