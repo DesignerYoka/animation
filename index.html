@@ -6,78 +6,116 @@
     <script type="importmap">
       {
         "imports": {
-          "react": "https://cdn.skypack.dev/react@18.0.2",
-          "react-dom": "https://cdn.skypack.dev/react-dom@18.0.2",
-          "three": "https://cdn.skypack.dev/three@0.148.0",
-          "react-three/fiber": "https://cdn.skypack.dev/@react-three/fiber@7.0.24"
+          "react": "https://esm.sh/react@18.0.2",
+          "react-dom": "https://esm.sh/react-dom@18.0.2",
+          "three": "https://esm.sh/three@0.148.0",
+          "react-three/fiber": "https://esm.sh/@react-three/fiber@7.0.24"
         }
       }
     </script>
     <style>
-      html,
-      body {
+      html, body {
         margin: 0;
         padding: 0;
         width: 100%;
         height: 100%;
         border: 0;
-        background: black;
+        background-color: #02010F;
       }
-
-      .nt-embed {
+      .nt-embed, .nt-embed canvas {
         width: 100%;
         height: 100%;
-      }
-
-      .nt-embed canvas {
-        width: 100%;
-        height: 100%;
+        display: block;
       }
     </style>
   </head>
   <body>
     <script type="module">
-      import React, { useRef } from "react";
-      import ReactDOM from "react-dom";
-      import * as THREE from "three";
-      import { Canvas, useFrame } from "react-three/fiber";
+      import React, { useRef } from 'react';
+      import ReactDOM from 'react-dom';
+      import * as THREE from 'three';
+      import { Canvas, useFrame } from 'react-three/fiber';
 
-      const embedRoot = document.createElement("div");
+      let embedRoot = document.createElement('div');
       embedRoot.className = "nt-embed";
       document.body.appendChild(embedRoot);
 
       const TextureMesh = () => {
         const mesh = useRef(null);
-        useFrame((state) => {
+        useFrame(state => {
           const { clock, mouse, gl } = state;
           if (mesh.current) {
-            mesh.current.material.uniforms.u_mouse.value = [
-              mouse.x / 2 + 0.5,
-              mouse.y / 2 + 0.5,
-            ];
+            mesh.current.material.uniforms.u_mouse.value = [mouse.x / 2 + 0.5, mouse.y / 2 + 0.5];
             mesh.current.material.uniforms.u_time.value = clock.getElapsedTime();
-            const c = gl.domElement.getBoundingClientRect();
+            let c = gl.domElement.getBoundingClientRect();
             mesh.current.material.uniforms.u_resolution.value = [c.width, c.height];
           }
         });
 
-        return React.createElement(
-          "mesh",
-          { ref: mesh, position: [0, 0, 0] },
-          React.createElement("planeGeometry", { args: [100, 100] }),
-          React.createElement("shaderMaterial", {
-            fragmentShader: `YOUR_FRAGMENT_SHADER_CODE_HERE`,
-            vertexShader: \`YOUR_VERTEX_SHADER_CODE_HERE\`,
+        return React.createElement('mesh',
+          { ref: mesh, position: [0, 0, 0], scale: 1 },
+          React.createElement('planeGeometry', { args: [1024, 1024] }),
+          React.createElement('shaderMaterial', {
+            fragmentShader: `/* 原始 fragmentShader 省略，为简洁保留完整逻辑 */
+uniform vec2 u_resolution;
+uniform vec2 u_mouse;
+uniform float u_time;
+uniform vec3 u_colors[4];
+uniform vec4 u_background;
+uniform float u_scale;
+uniform int u_waves;
+uniform float u_thickness;
+uniform float u_stretch_x;
+uniform float u_stretch_y;
+uniform float u_blur;
+uniform float u_speed;
+uniform float u_coil;
+
+vec4 wave(vec2 uv, float speed, float height, vec3 col) {
+  float taper = abs(uv.x);
+  uv.y += smoothstep(1., 0., taper) * sin(u_time * speed + uv.x * height) * .2;
+  return vec4(
+    smoothstep(u_blur * smoothstep(.1, .9, taper), 0., abs(uv.y)*(1.-u_blur) - .2*u_thickness) * col,
+    1.0
+  ) * smoothstep(1., .5, abs(uv.x));
+}
+
+vec4 render(vec2 uv) {
+  vec4 color = vec4(0.);
+  uv *= (1. - u_scale);
+  for (int i = 1; i <= u_waves; i++) {
+    vec3 c = u_colors[i % 4];
+    float t = float(i) / float(u_waves);
+    vec4 l = wave(
+      uv * vec2(1.5 - 1.5 * u_stretch_x, 4. - 4. * u_stretch_y),
+      1. + t * u_speed * 8.0,
+      u_coil * t,
+      c * vec3(.2 + t * .7, .2 + t * .4, 1.0 * t)
+    );
+    color += vec4(l.rgb, clamp(l.r + l.g + l.b, 0., 1.));
+  }
+  return color;
+}
+
+void main() {
+  vec2 uv = (gl_FragCoord.xy - .5 * u_resolution.xy) / u_resolution.y;
+  vec4 color = render(uv);
+  color = (color * color.a) + (u_background * (1. - color.a));
+  gl_FragColor = color;
+}
+`,
+            vertexShader: `
+void main() {
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+}`,
             uniforms: {
-              u_colors: {
-                value: [
-                  new THREE.Vector4(0.937, 0, 1, 1),
-                  new THREE.Vector4(0.875, 1, 0, 1),
-                  new THREE.Vector4(0, 1, 1, 1),
-                  new THREE.Vector4(0.467, 0.22, 1, 1),
-                ],
-              },
-              u_background: { value: [0, 0, 0, 1] },
+              u_colors: { value: [
+                new THREE.Vector3(0.937, 0, 1),
+                new THREE.Vector3(0.875, 1, 0),
+                new THREE.Vector3(0, 1, 1),
+                new THREE.Vector3(0.467, 0.22, 1)
+              ]},
+              u_background: { value: new THREE.Vector4(0.0078, 0.0039, 0.0588, 1) },
               u_scale: { value: 0 },
               u_waves: { value: 8 },
               u_thickness: { value: 0.04 },
@@ -88,25 +126,40 @@
               u_coil: { value: 6.084 },
               u_time: { value: 0 },
               u_mouse: { value: [0, 0] },
-              u_resolution: { value: [1024, 1024] },
+              u_resolution: { value: [1024, 1024] }
             },
-            flatShading: true,
-            doubleSided: true,
+            glslVersion: "100"
           })
         );
       };
 
       ReactDOM.render(
-        React.createElement(
-          Canvas,
-          {
-            gl: { alpha: true, antialias: true },
-            dpr: 1,
-            camera: { fov: 75, near: 0.1, far: 1000, position: [0, 0, 5] },
-            style: { height: "100%", width: "100%" },
+        React.createElement(Canvas, {
+          gl: {
+            preserveDrawingBuffer: true,
+            premultipliedAlpha: false,
+            alpha: false,
+            antialias: true,
+            precision: "highp",
+            powerPreference: "high-performance"
           },
-          React.createElement(TextureMesh)
-        ),
+          onCreated: ({ gl }) => {
+            gl.setClearColor("#02010F");
+          },
+          resize: {
+            debounce: 0,
+            scroll: false,
+            offsetSize: true
+          },
+          dpr: 1,
+          camera: {
+            fov: 75,
+            near: 0.1,
+            far: 1000,
+            position: [0, 0, 5]
+          },
+          style: { height: "100%", width: "100%" }
+        }, React.createElement(TextureMesh)),
         embedRoot
       );
     </script>
